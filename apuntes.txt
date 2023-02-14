@@ -1,0 +1,142 @@
+cd directoriodelProyecto
+
+pip install virtualenv
+
+virtualenv -p python3 .     ----> Otra opcion es crear el virtualenv pasando la url donde se instalo Python3
+virtualenv venv -p /path/to/python3
+---> Otra es directo en la carpeta del proyecto
+mkdir venv
+cd venv
+virtualenv . -p python3
+
+---Instalar django
+pip install django   -----> otra es    python -m pip install Django
+
+cd Scripts
+
+---Activar virtualenvironment
+activate
+
+cd ..
+
+---Crear proyecto nuevo con django
+django-admin startproject nombredelproyecto .
+
+---Iniciar un proyecto
+python manage.py runserver
+
+--Instalarle apps
+python manage.py startapp app 
+ejemplos>
+python manage.py startapp products
+python manage.py startapp blog
+python manage.py startapp profiles
+python manage.py startapp cart
+
+--UNA VEZ QUE CREAMOS UN NUEVO MODELO DENTRO DE UNA APP, TENEMOS QUE MIGRARLO AL PROYECTO
+python manage.py makemigrations
+python manage.py migrate
+
+--UNA VEZ QUE CREAMOS UN NUEVO MODELO, TAMBIEN TENEMOS QUE IMPORTARLO DESDE admin.py E INCLUIRLO EN EL FRONTEND DEL SITIO
+ejemplos:
+from .models import Product
+admin.site.register(Product)
+
+--TAMBIEN ES POSIBLE EJECUTAR COMANDOS DESDE LA SHELL DE PYTHON, QUE INTERACTUEN CON NUESTRO BACKEND, EJ: PARA CREAR OBJETOS
+python manage.py shell
+--AQUI YA PODEMOS EJECUTAR COMANDOS AL SHELL DEL PROGRAMA
+from products.models import Product
+Product.objects.all()
+Product.objects.create(title="titulo del producto", description="descripcion"...)
+
+--AÑADIR NUESTRAS PROPIAS VIEWS
+1) Podemos devolver código HTML o una página entera desde el archivo de views en /src/pages/views.py
+Creamos la función, ejemplo, creamos una vista llamada homepage_view:
+from django.http import HttpResponse
+from django.shortcuts import render
+
+def homepage_view(*args, **kwargs):
+    #We cannot just return a string, but a HTTP request with that string
+    return HttpResponse("<h1> Hello World </h1>") #string of HTML code
+#También podemos crear plugins de una app en particular (ej: Products)
+
+2) Luego tenemos que "registrar" la url de nuestra view desde el archivo urls.py, tenemos que importar la view  y después añadirlo al array de urlpatterns:
+from django.contrib import admin
+from django.urls import path
+
+from pages.views import homepage_view
+
+urlpatterns = [
+    path('', homepage_view, name='home'),
+    path("admin/", admin.site.urls),
+]
+
+
+--PARA AÑADIR TEMPLATES A NUESTRA APP:
+Es recomendable tener una carpeta "templates" donde añadamos nuestros HTML, debemos añadir la URL de nuestra carpeta de templates dentro 
+del archivo settings.py en el campo "DIRS" del objeto "TEMPLATES", figurando algo así         "DIRS": ['templates'],
+
+Luego, ya podemos devolver una template desde una view, ejemplo:
+def homepage_view(request, *args, **kwargs):
+    return render(request, "home.html", {})
+
+Podemos hacer herencia de templates, simplemente importando la template deseada desde la heredada, con un bloque {% extends %} ejemplo {% extends "base.html" %}
+y luego indicar el inicio y fin del bloque de contenido HTML que hemos definido en nuestra template:
+{% block content %}
+<h1> Hola mundo </h1>
+{% endblock %}
+
+
+--> Para incluir una template externa dentro de cualquier template
+{% include 'template.html' %}
+
+
+
+--> FORMULARIO DE INGRESO DE DATOS A LA BASE DE DATOS, UTILIZANDO LAS TEMPLATES DE FORMS DE DJANGO
+Creamos una nueva vista para crear productos, dentro de la app, creamos la carpeta 'templates', dentro otra carpeta con el mismo nombre de la app, y luego dentro, el archivo html, ejemplo:
+/products/templates/products/products_create_view.html
+*Tenemos que crear tambien un archivo para los formularios, ejemplo, dentro de la app, creamos un archivo forms.py, y dentro, definimos el modelo que va a tener el form:
+from django import forms
+
+from .models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'title',
+            'description',
+            'price'
+        ]
+        
+
+*Tenemos que crear la nueva vista que devuelva esa template dentro de products/views, ejemplo product_create_view:
+def product_create_view(request):
+    form = ProductForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+    form = ProductForm()
+    context = {
+        'form': form
+    }
+    return render(request, "products/product_create.html", context)
+
+*Tambien debemos programar la template de tal modo que inserte los campos del form con las templates de Django:
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form method='POST'> {% csrf_token %}
+
+{{ form.as_p }}
+<input type='submit' value='Save' />
+
+</form>
+
+{% endblock %}
+
+El token CSRF es un input de seguridad necesario para cuando enviamos data por POST
+
+
+
+

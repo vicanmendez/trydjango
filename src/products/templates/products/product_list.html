@@ -1,0 +1,14 @@
+{% block content %}
+<h1> Products </h1>
+<ul> 
+
+{% for element in object_list %}
+    <li> {{element.id}} - <a href="{{ element.get_absolute_url }}"> {{ element.title }} </a> - {{ element.price }} - <a href="http://{{request.get_host}}/products/{{element.id}}/delete"> Delete? </a> 
+    </li>
+
+<br>
+{% endfor %}
+</ul>
+
+<a href="http://{{request.get_host}}/products/create/"> Create new product </a>
+{% endblock %}

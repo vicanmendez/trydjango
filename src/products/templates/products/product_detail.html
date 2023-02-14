@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h1>In app template: {{object.title }} </h1>
+    <p>
+    {% if object.description != '' and object.description != None %}
+        {{ object.description}} 
+    {% else %}
+        Description comming soon
+    {% endif %} 
+
+    {% if object.price != '' and object.price != None %}
+   Price:  {{ object.price}}  USD
+{% else %}
+    Price is not available
+{% endif %} 
+
+
+
+{% endblock %}

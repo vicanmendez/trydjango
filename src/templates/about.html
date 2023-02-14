@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ title|upper}}</h1>
+    {{my_html|safe}} <!-- Despliega codigo HTML dentro de una variable que contiene codigo-->
+    {{my_html|striptags}} <!-- Quita todos los tags HTML de una variable-->
+    <p> <!-- Vamos a insertar datos del contexto usando doble llave-->
+        Texto del context: {{ abc }} <br>
+        Número del context: {{ my_number }} <br>
+        Lista del context como HTML: <br>
+        <ul>
+            {% for item in my_list %}
+                {% if abc == 312 %}
+                     <li>{{ item }} - {{ abc|add:22 }}</li>
+                {% elif item == "abc" %}
+                     <li>{{ item }} - This isnot the network</li>
+                {% endif %}
+            {% endfor %} 
+        </ul>
+    <p>
+    {% for i in my_numbers %}
+        <p>{{ i }}</p>
+    {% endfor %}
+
+{% endblock content%}
